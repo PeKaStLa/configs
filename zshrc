@@ -2,34 +2,6 @@
 #
 #
 ###############################################################################
-rvenv () {
-	local name="${1:-venv}" 
-	local venvpath="/Users/peter/.venvs/${name}" 
-	if [[ ! -d "$venvpath" ]]
-	then
-		echo "Error: no such venv in current directory: $name" >&2
-		return 1
-	fi
-	if [[ ! -f "${venvpath}/bin/activate" ]]
-	then
-		echo "Error: '${name}' is not a proper virtual environment" >&2
-		return 1
-	fi
-	. "${venvpath}/bin/activate" || return $?
-	echo "Activated virtual environment ${name}"
-}
-
-###################
-
-mvenv () {
-	echo "Deactivate current venv to being able to use /opt/homebrew/bin/python3."
-	deactivate
-	local name="${1:-venv}" 
-	local venvpath="/Users/peter/.venvs/${name}" 
-	python3 -m venv "${venvpath}" || return
-	echo "Created venv in '${venvpath}'" >&2
-	rvenv "${name}"
-}
 
 
 ###############################################################################
@@ -120,7 +92,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git helm taskwarrior kubectl docker python tmux z)
+plugins=(git helm taskwarrior kubectl docker python tmux z virtualenv pyenv)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -160,7 +132,7 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 ###############################################################################
-export API_TOKEN=xxxx
+export EXXETA_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6ImJjNDg0OWM5ZGY1YmQ0ZDUzOGI4NWI1MWU5YWMxNjVlIn0.jybZhm2a9X6yKSpcPwCW2yWbALoowcKD8P1YvTQdlN0
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -203,6 +175,12 @@ setopt HIST_IGNORE_ALL_DUPS      # Delete old recorded entry if new entry is a d
 
 ###############################################################################
 
+alias dpto='displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0" "id:D5900966-DD58-4DFD-9D20-5661A9CB13C9 res:1920x1200 hz:60 color_depth:4 enabled:true scaling:off origin:(0,-1200) degree:0"'
+alias dpso='displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0" "id:D5900966-DD58-4DFD-9D20-5661A9CB13C9 res:1920x1200 hz:60 color_depth:4 enabled:true scaling:off origin:(1512,-218) degree:0"'
+
+alias dpth='displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0" "id:CCFB4753-50B5-487A-9EA8-5BF99219A5D0 res:1920x1200 hz:60 color_depth:8 enabled:true scaling:off origin:(0,-1200) degree:0"'
+alias dpsh='displayplacer "id:37D8832A-2D66-02CA-B9F7-8F30A301B230 res:1512x982 hz:120 color_depth:8 enabled:true scaling:on origin:(0,0) degree:0" "id:CCFB4753-50B5-487A-9EA8-5BF99219A5D0 res:1920x1200 hz:60 color_depth:8 enabled:true scaling:off origin:(-1920,-218) degree:0"'
+
 alias pip=pip3
 alias py=python3
 alias py3=python3
@@ -211,11 +189,13 @@ alias ve='python3 -m venv ./venv'
 alias va='source ./venv/bin/activate'
 alias lt='du -sh * | sort -h'
 
-alias ..='cd ../../'
-alias ...='cd ../../../'
-alias ....='cd ../../../../'
-alias .....='cd ../../../../../'
+alias ..='cd ../'
+alias ...='cd ../../'
+alias ....='cd ../../../'
+alias .....='cd ../../../../'
+alias ......='cd ../../../../../'
 
+alias .1='cd ../'
 alias .2='cd ../../'
 alias .3='cd ../../../'
 alias .4='cd ../../../../'
@@ -223,11 +203,15 @@ alias .5='cd ../../../../../'
 alias cd..='cd ..'
 
 alias dog='cat'
+alias q='exit'
+alias 'q!'='echo "Killing this terminal-process now."; kill -9 $$'
 alias hi='history 1'
-alias gh='hi | rg'
+alias hs='history | rg -i'
 alias h='head -n 25'
 alias t='tail -n 25'
 alias myip='curl "http://httpbin.org/ip"'
+alias fire="git checkout -b emergency && git add . && git commit -m 'fire' && git push --set-upstream origin emergency"
+
 
 alias k=kubectl
 alias kn='/usr/local/bin/kubectl'
@@ -238,24 +222,41 @@ alias kv='kubectl version --client --output=yaml'
 alias kg='kubectl get'
 alias kgn='kubectl get namespaces'
 alias kgpa='kubectl get pods -A'
-alias kgpans='kubectl get pods -A | grep -v kube-system'
+alias kgpans='kubectl get pods -A | grep -v kube-system | grep -v caas-system'
 alias kgpn='kubectl get pods -n'
+
+alias kgsa='kubectl get svc -A'
+alias kgsn='kubectl get svc -n'
+alias kex='kubectl exec'
+
 alias ka='kubectl apply -f'
-alias kd='kubectl delete'
-alias kdn='kubectl delete namespace'
+alias kdel='kubectl delete'
+alias kd='kubectl describe'
+alias kdeln='kubectl delete namespace'
+alias kdn='kubectl describe namespace'
 alias kgc='kubectl config get-contexts'
 
 alias kuc='kubectl config use-context'
 alias kucr='kubectl config use-context rancher-desktop'
 alias kucm='kubectl config use-context minikube'
-alias kucdhc='kubectl config use-context xxx'
-alias kucca='kubectl config use-context xxxx'
+alias kucdhc='kubectl config use-context c53p092-admin'
+alias kucca='kubectl config use-context c82p038-admin'
 
 alias gkc='grep 'name:' ~/.kube/config'
-alias ekcca='export KUBECONFIG=/Users/peter/Documents/xxxx.kubeconfig'
-alias ekcdhc='export KUBECONFIG=/Users/peter/Documents/xxxx.kubeconfig'
+alias ekcca='export KUBECONFIG=/Users/peter/Documents/MBTI_i3_dir/c82p038.kubeconfig'
+alias ekcdhc='export KUBECONFIG=/Users/peter/Documents/MBTI_i3_dir/c53p092.kubeconfig'
+alias ekctd='export KUBECONFIG=/Users/peter/Documents/MBTI_i3_dir/c53p252.kubeconfig'
+
+
 alias ekc='export KUBECONFIG=/Users/peter/.kube/config'
 alias ekcc='export KUBECONFIG=/Users/peter/.kube/.colima/colima-temp'
+
+alias extu='az network bastion tunnel --name coe-eu-cgw-bastion --resource-group coe-eu-cgw-edge --target-resource-id /subscriptions/93e51894-5409-4b72-a4c0-ef971e3eb299/resourceGroups/IT-EU-RSV-I3-DEV/providers/Microsoft.Compute/virtualMachines/i3deveusvm1 --resource-port 22 --port 20001 --subscription GC300_Sub_eXtollo-platform_Prod'
+alias sshextu='ssh -p 20001 stadlep@localhost'
+alias sshextuadmin='ssh -p 20001 i3deveusvm1Admin@localhost'
+alias exto='if [[ $(chp 20001) == "No process on port 20001" ]]; then echo "THEN"; extu &; read -n 1; sshextu; else echo "ELSE"; sshextu; fi'
+#alias exto='extu &; read -n 1; sshextu'
+alias extoadmin='extu &; read -n 1; sshextuadmin'
 
 alias dcs='docker container ls | grep'
 alias dc='docker container ls'
@@ -266,7 +267,7 @@ alias rc=rclone
 alias ll='ls -la'
 alias ping='ping -c 5'
 alias c=clear
-alias line='echo -----------------------------------------------------------------------------'
+alias line="printf '%*s\n' $COLUMNS | tr ' ' -"
 alias phr='tr ":" "\n" <<< "$PATH"'
 alias zed='open -a /Applications/Zed.app -n . '
 
@@ -275,6 +276,25 @@ alias zed='open -a /Applications/Zed.app -n . '
 alias mv='mv -i'
 alias cp='cp -i'
 alias ln='ln -i'
+
+###############################################################################
+# check port for process
+
+chp()
+{
+  if [[ ! -z $1 ]]
+  then
+      output=$(lsof -i tcp:${1})
+      if ! [[ $output = ""  ]];
+      then
+          echo $output;
+      else
+          echo "No process on port $1"
+      fi
+  else
+      echo "Parameter missing"
+  fi
+}
 
 ###############################################################################
 # important eigene functions:
@@ -533,3 +553,5 @@ source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # for linux dev-env: GNUBINS="$(find `brew --prefix`/opt -type d -follow -name gnubin -print)"; for bindir in ${GNUBINS[@]}; do  export PATH=$bindir:$PATH ; done ; export PATH
 
 #export JAVA_HOME="/usr/bin/java"
+export GOPATH="$HOME/go"
+export PATH=$PATH:$GOPATH/bin
